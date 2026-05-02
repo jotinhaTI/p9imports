@@ -914,7 +914,7 @@ footer {
 
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal">
-    <div class="modal-close"><button id="modal-close">✕</button></div>
+    <div class="modal-close"><button id="modal-close" onclick="closeModal()">✕</button></div>
     <div class="carousel" id="modal-carousel">
       <div class="carousel-track" id="carousel-track"></div>
       <button class="carousel-prev hidden" id="carousel-prev" onclick="carouselMove(-1)">‹</button>
@@ -1207,7 +1207,6 @@ function buildWppLink(p, size) {
   return `https://wa.me/${WPP}?text=${msg}`;
 }
 
-document.getElementById('modal-close').querySelector('button').addEventListener('click', closeModal);
 document.getElementById('modal-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
 });
