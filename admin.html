@@ -619,6 +619,14 @@
   </div>
 
   <div class="field">
+    <label>Status do Produto</label>
+    <div class="badge-opts">
+      <input class="badge-radio" type="radio" name="soldout" id="so0" value="0" checked /><label for="so0">✓ Disponível</label>
+      <input class="badge-radio" type="radio" name="soldout" id="so1" value="1" /><label for="so1">✗ Esgotado</label>
+    </div>
+  </div>
+
+  <div class="field">
     <label>Badge / Destaque</label>
     <div class="badge-opts">
       <input class="badge-radio" type="radio" name="badge" id="b0" value="" checked /><label for="b0">Nenhum</label>
@@ -956,6 +964,7 @@ function resetForm() {
   galleryImgs = [];
   renderGallery();
   document.querySelector('input[name=badge][value=""]').checked = true;
+  document.querySelector('input[name=soldout][value="0"]').checked = true;
   buildSizesGrid('camiseta');
   document.getElementById('form-title').innerHTML = 'Novo <span>Produto</span>';
   renderList();
@@ -977,6 +986,8 @@ function editProduct(id) {
 
   const badgeInput = document.querySelector(`input[name=badge][value="${p.badge || ''}"]`);
   if (badgeInput) badgeInput.checked = true;
+  const soInput = document.querySelector(`input[name=soldout][value="${p.soldOut ? '1' : '0'}"]`);
+  if (soInput) soInput.checked = true;
 
   // load gallery
   galleryImgs = Array.isArray(p.imgs) ? [...p.imgs] : (p.img ? [p.img] : []);
@@ -992,7 +1003,8 @@ async function saveProduct() {
   const desc  = document.getElementById('f-desc').value.trim();
   const price = document.getElementById('f-price').value.trim();
   const sizes = getSelectedSizes();
-  const badge = document.querySelector('input[name=badge]:checked')?.value || '';
+  const badge   = document.querySelector('input[name=badge]:checked')?.value || '';
+  const soldOut = document.querySelector('input[name=soldout]:checked')?.value === '1';
 
   if (!name || !cat || !desc || !price) {
     showToast('Preencha todos os campos obrigatórios.', true);
@@ -1011,7 +1023,7 @@ async function saveProduct() {
   const ordem    = existing ? existing.ordem : (products.length + 1);
 
   const product = {
-    id: newId, cat, name, desc, price, sizes, badge, imgs, img, ordem
+    id: newId, cat, name, desc, price, sizes, badge, soldOut, imgs, img, ordem
   };
 
   try {
