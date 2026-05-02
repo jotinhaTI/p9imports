@@ -364,11 +364,18 @@ section {
 }
 
 .product-img {
-  aspect-ratio: 3/4;
+  aspect-ratio: 1/1;
   background: #1a1a1a;
   position: relative;
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
+}
+.product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 /* Product placeholder visuals */
@@ -596,18 +603,27 @@ footer {
 }
 .carousel-track {
   display: flex;
+  width: 100%;
   height: 100%;
   transition: transform .35s ease;
   will-change: transform;
 }
 .carousel-slide {
-  min-width: 100%; height: 100%;
+  min-width: 100%;
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 5rem; color: var(--gray);
-  flex-shrink: 0;
+  overflow: hidden;
 }
 .carousel-slide img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  flex-shrink: 0;
 }
 .carousel-prev,
 .carousel-next {
@@ -667,20 +683,19 @@ footer {
   .modal { border-bottom: 1px solid var(--border); border-radius: 0; max-height: 90vh; }
 }
 .modal-close {
-  position: sticky; top: 0; z-index: 20;
-  display: flex; justify-content: flex-end;
-  padding: 12px 16px 0;
-  background: var(--card);
-}
-.modal-close button {
-  background: var(--card2); border: 1px solid var(--border);
-  color: var(--white); font-size: 1rem;
+  position: absolute;
+  top: 10px; right: 10px;
+  z-index: 30;
+  background: rgba(0,0,0,.75);
+  border: 1px solid rgba(255,255,255,.2);
+  color: var(--white);
+  font-size: 1rem;
   width: 32px; height: 32px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
   transition: border-color .2s;
-  flex-shrink: 0;
 }
-.modal-close button:hover { border-color: var(--gold); color: var(--gold); }
+.modal-close:hover { border-color: var(--gold); color: var(--gold); }
 .modal-body {
   padding: 1.2rem 1.4rem 2rem;
   display: flex; flex-direction: column;
@@ -927,8 +942,8 @@ footer {
 
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal">
-    <div class="modal-close"><button id="modal-close" onclick="closeModal()">✕</button></div>
     <div class="carousel" id="modal-carousel">
+      <button class="modal-close" id="modal-close" onclick="closeModal()">✕</button>
       <div class="carousel-track" id="carousel-track"></div>
       <button class="carousel-prev hidden" id="carousel-prev" onclick="carouselMove(-1)">‹</button>
       <button class="carousel-next hidden" id="carousel-next" onclick="carouselMove(1)">›</button>
