@@ -988,10 +988,12 @@ const WPP_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentCo
 function buildCard(p) {
   const imgContent = p.img
     ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;display:block;" />`
-    : `<div class="placeholder">${p.emoji}</div>`;
-  const sizeLabel = p.sizes && p.sizes.length ? p.sizes[0] + ' ao ' + p.sizes[p.sizes.length-1] : 'Ver tamanhos';
+    : `<div class="placeholder">${p.emoji || CAT_EMOJI[p.cat] || '📦'}</div>`;
+  const sizes = Array.isArray(p.sizes) ? p.sizes : [];
+  const sizeLabel = sizes.length > 1 ? `${sizes[0]} ao ${sizes[sizes.length-1]}` : sizes[0] || 'Ver tamanhos';
+  const safeId = String(p.id).replace(/"/g, '');
   return `
-  <div class="product-card" data-cat="${p.cat}" data-name="${p.name.toLowerCase()}" data-desc="${p.desc.toLowerCase()}" onclick="openModal(${p.id})">
+  <div class="product-card" data-cat="${p.cat}" data-name="${p.name.toLowerCase()}" data-desc="${p.desc.toLowerCase()}" onclick="openModal('${safeId}')">
     <div class="product-img">
       ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
       ${imgContent}
@@ -1000,7 +1002,7 @@ function buildCard(p) {
       </div>
     </div>
     <div class="product-info">
-      <p class="product-category">${p.catLabel}</p>
+      <p class="product-category">${p.catLabel || CAT_LABEL[p.cat] || p.cat}</p>
       <h3 class="product-name">${p.name}</h3>
       <p class="product-desc">${p.desc.substring(0,60)}...</p>
       <div class="product-footer">
@@ -1098,25 +1100,32 @@ let carouselIndex = 0;
 let carouselImgs = [];
 
 function openModal(id) {
-  const p = products.find(x => x.id === id);
+  // Firebase IDs são strings — compara dos dois jeitos
+  const p = products.find(x => x.id == id);
   if (!p) return;
+
   selectedSize = '';
-  document.getElementById('modal-cat').textContent = p.catLabel;
-  document.getElementById('modal-name').textContent = p.name;
-  document.getElementById('modal-desc').textContent = p.desc;
+  document.getElementById('modal-cat').textContent  = p.catLabel || CAT_LABEL[p.cat] || p.cat;
+  document.getElementById('modal-name').textContent  = p.name;
+  document.getElementById('modal-desc').textContent  = p.desc;
   document.getElementById('modal-price').textContent = p.price;
 
-  // Build carousel images: prefer imgs array, fallback to img, fallback to emoji
-  carouselImgs = Array.isArray(p.imgs) && p.imgs.length ? p.imgs : (p.img ? [p.img] : []);
+  // Carrossel: usa imgs array se existir, senão img único, senão emoji
+  carouselImgs = Array.isArray(p.imgs) && p.imgs.length ? p.imgs
+               : (p.img ? [p.img] : []);
   carouselIndex = 0;
-  renderCarousel(p.emoji);
+  renderCarousel(p.emoji || CAT_EMOJI[p.cat] || '📦');
 
-  const sizeHTML = p.sizes.map(s =>
-    `<span class="size-chip" onclick="selectSize(this,'${s}')">${s}</span>`
-  ).join('');
+  // Tamanhos
+  const sizes = Array.isArray(p.sizes) ? p.sizes : [];
+  const sizeHTML = sizes.length
+    ? sizes.map(s => `<span class="size-chip" onclick="selectSize(this,'${s}')">${s}</span>`).join('')
+    : '<span style="color:var(--gray);font-size:.8rem">Tamanho único</span>';
   document.getElementById('modal-sizes').innerHTML = sizeHTML;
 
+  // WhatsApp
   document.getElementById('modal-wpp').href = buildWppLink(p, '');
+
   document.getElementById('modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1169,14 +1178,16 @@ function selectSize(el, size) {
   document.querySelectorAll('.size-chip').forEach(c => c.classList.remove('sel'));
   el.classList.add('sel');
   selectedSize = size;
-  // Update WPP link
-  const nameEl = document.getElementById('modal-name').textContent;
-  const p = products.find(x => x.name === nameEl);
+  const name = document.getElementById('modal-name').textContent;
+  const p = products.find(x => x.name === name);
   if (p) document.getElementById('modal-wpp').href = buildWppLink(p, size);
 }
 
 function buildWppLink(p, size) {
-  const msg = encodeURIComponent(`Olá! Tenho interesse no produto:\n\n*${p.name}*\nCategoria: ${p.catLabel}\nPreço: ${p.price}${size ? '\nTamanho: ' + size : ''}\n\nPode me ajudar?`);
+  const catLabel = p.catLabel || CAT_LABEL[p.cat] || p.cat;
+  const msg = encodeURIComponent(
+    `Olá! Tenho interesse no produto:\n\n*${p.name}*\nCategoria: ${catLabel}\nPreço: ${p.price}${size ? '\nTamanho: ' + size : ''}\n\nPode me ajudar?`
+  );
   return `https://wa.me/${WPP}?text=${msg}`;
 }
 
