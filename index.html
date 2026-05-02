@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>P9 IMPORTS — Streetwear Premium</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Barlow+Condensed:wght@300;400;500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
@@ -920,11 +922,7 @@ footer {
   </div>
 </div>
 
-<script type="module">
-import { initializeApp }              from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, query, orderBy }
-                                       from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-
+<script>
 const firebaseConfig = {
   apiKey:            "AIzaSyAOV4jAq10kyGF8j8_60RO0jAlBI5flCUQ",
   authDomain:        "p9importa.firebaseapp.com",
@@ -934,8 +932,8 @@ const firebaseConfig = {
   appId:             "1:523440051527:web:b25da0dfc5ba3db928a862"
 };
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 const WPP = '5511932513813';
 
@@ -969,25 +967,16 @@ function getDefaultProducts() {
 }
 
 // ── FIREBASE REALTIME LISTENER ──
-// Products array — updated live from Firestore
 let products = [];
 
-const q = query(collection(db, 'produtos'), orderBy('ordem', 'asc'));
-onSnapshot(q, (snapshot) => {
+db.collection('produtos').orderBy('ordem', 'asc').onSnapshot(snapshot => {
   products = snapshot.docs.map(doc => {
     const d = doc.data();
-    return {
-      ...d,
-      id:       doc.id,
-      catLabel: CAT_LABEL[d.cat] || d.cat,
-      emoji:    CAT_EMOJI[d.cat] || '📦',
-    };
+    return { ...d, id: doc.id, catLabel: CAT_LABEL[d.cat]||d.cat, emoji: CAT_EMOJI[d.cat]||'📦' };
   });
-  // Re-render everything when data changes
   renderGrid();
-}, (err) => {
+}, err => {
   console.error('Firestore error:', err);
-  // Fallback: show default products if Firebase fails
   products = getDefaultProducts().map(p => ({
     ...p, catLabel: CAT_LABEL[p.cat]||p.cat, emoji: CAT_EMOJI[p.cat]||'📦'
   }));
@@ -1204,7 +1193,3 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 </body>
 </html>
-      
-
-
-  
