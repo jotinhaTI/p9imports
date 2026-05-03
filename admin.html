@@ -598,6 +598,8 @@
       <option value="conjunto">Conjunto</option>
       <option value="tenis">Tênis</option>
       <option value="calca">Calça</option>
+      <option value="blusa">Blusa</option>
+      <option value="jaqueta">Jaqueta</option>
     </select>
   </div>
 
@@ -705,16 +707,20 @@ const SIZE_MAP = {
   conjunto: ['PP','P','M','G','GG','XG'],
   tenis:    ['35','36','37','38','39','40','41','42','43','44','45'],
   calca:    ['34','36','38','40','42','44','46'],
+  blusa:    ['PP','P','M','G','GG','XG'],
+  jaqueta:  ['PP','P','M','G','GG','XG'],
 };
 
 const CAT_LABEL = {
   camiseta:'Camiseta', short:'Short', moletom:'Moletom',
-  conjunto:'Conjunto', tenis:'Tênis', calca:'Calça'
+  conjunto:'Conjunto', tenis:'Tênis', calca:'Calça',
+  blusa:'Blusa', jaqueta:'Jaqueta'
 };
 
 const CAT_EMOJI = {
   camiseta:'👕', short:'🩳', moletom:'🧥',
-  conjunto:'🩴', tenis:'👟', calca:'👖'
+  conjunto:'🩴', tenis:'👟', calca:'👖',
+  blusa:'👚', jaqueta:'🧣'
 };
 
 let products = [];
