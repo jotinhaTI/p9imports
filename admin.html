@@ -824,18 +824,18 @@ function renderList() {
     return;
   }
   el.innerHTML = filtered.map(p => `
-    <div class="product-row${editingId === p.id ? ' editing' : ''}" id="row-${p.id}" onclick="editProduct(${p.id})">
+    <div class="product-row${editingId == p.id ? ' editing' : ''}" id="row-${p.id}" onclick="editProduct('${p.id}')">
       <div class="row-thumb">
         ${p.img ? `<img src="${p.img}" alt="${p.name}" />` : CAT_EMOJI[p.cat] || '📦'}
       </div>
       <div class="row-info">
         <div class="row-name">${p.name}</div>
-        <div class="row-meta">${CAT_LABEL[p.cat]} · ${p.sizes.join(', ')}${p.badge ? ' · ' + p.badge : ''}</div>
+        <div class="row-meta">${CAT_LABEL[p.cat] || p.cat} · ${(p.sizes||[]).join(', ')}${p.badge ? ' · ' + p.badge : ''}</div>
       </div>
       <div class="row-price">${p.price}</div>
       <div class="row-actions" onclick="event.stopPropagation()">
-        <button class="icon-btn" title="Editar" onclick="editProduct(${p.id})">✏️</button>
-        <button class="icon-btn del" title="Excluir" onclick="confirmDelete(${p.id})">🗑️</button>
+        <button class="icon-btn" title="Editar" onclick="editProduct('${p.id}')">✏️</button>
+        <button class="icon-btn del" title="Excluir" onclick="confirmDelete('${p.id}')">🗑️</button>
       </div>
     </div>
   `).join('');
@@ -977,7 +977,7 @@ function resetForm() {
 }
 
 function editProduct(id) {
-  const p = products.find(x => x.id === id);
+  const p = products.find(x => x.id == id);
   if (!p) return;
   editingId = id;
   document.getElementById('form-title').innerHTML = `Editando <span>${p.name}</span>`;
