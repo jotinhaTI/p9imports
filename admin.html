@@ -643,10 +643,8 @@
   </div>
 
   <div class="field">
-    <label>Fotos do Produto <span style="color:var(--gray);font-size:.6rem;letter-spacing:.1em">(até 6 fotos · a 1ª é a principal)</span></label>
-    <div class="gallery-grid" id="gallery-grid">
-      <!-- thumbs rendered by JS -->
-    </div>
+    <label>Fotos do Produto <span style="color:var(--gray);font-size:.6rem;letter-spacing:.1em">(máx. 2 fotos · a 1ª é a principal)</span></label>
+    <div class="gallery-grid" id="gallery-grid"></div>
     <p class="gallery-hint" id="gallery-hint">Nenhuma foto adicionada ainda.</p>
   </div>
 
@@ -874,8 +872,9 @@ function setSelectedSizes(sizes) {
   });
 }
 
-/* ── MULTI-IMAGE GALLERY ── */
-let galleryImgs = []; // array of base64 strings, index 0 = main
+/* ── GALERIA (máx. 2 fotos, compressão agressiva) ── */
+const MAX_PHOTOS = 3;
+let galleryImgs = [];
 
 function renderGallery() {
   const grid = document.getElementById('gallery-grid');
@@ -889,12 +888,12 @@ function renderGallery() {
       <button class="thumb-remove" onclick="removeImg(${i})" title="Remover">✕</button>
       ${i === 0
         ? `<span class="thumb-main-badge">Principal</span>`
-        : `<button class="thumb-set-main" onclick="setMainImg(${i})" title="Definir como principal">★ Principal</button>`
+        : `<button class="thumb-set-main" onclick="setMainImg(${i})">★ Principal</button>`
       }
     </div>`;
   });
 
-  if (galleryImgs.length < 6) {
+  if (galleryImgs.length < MAX_PHOTOS) {
     html += `
     <label class="gallery-add" title="Adicionar foto">
       <input type="file" accept="image/*" multiple onchange="handleImgs(this)" />
@@ -907,18 +906,19 @@ function renderGallery() {
   hint.style.display = galleryImgs.length === 0 ? 'block' : 'none';
 }
 
-function compressImage(file, maxWidth = 800, quality = 0.7) {
+function compressImage(file) {
   return new Promise(resolve => {
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
+        const maxW = 800;
         let w = img.width, h = img.height;
-        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        resolve(canvas.toDataURL('image/jpeg', 0.65));
       };
       img.src = e.target.result;
     };
@@ -928,13 +928,11 @@ function compressImage(file, maxWidth = 800, quality = 0.7) {
 
 function handleImgs(input) {
   const files = [...input.files];
-  const remaining = 6 - galleryImgs.length;
+  const remaining = MAX_PHOTOS - galleryImgs.length;
   const toLoad = files.slice(0, remaining);
-
   if (files.length > remaining) {
-    showToast(`Máximo 6 fotos. ${files.length - remaining} ignorada(s).`, true);
+    showToast(`Máximo ${MAX_PHOTOS} fotos permitidas.`, true);
   }
-
   Promise.all(toLoad.map(f => compressImage(f))).then(results => {
     galleryImgs.push(...results);
     renderGallery();
@@ -995,7 +993,7 @@ function editProduct(id) {
   const soInput = document.querySelector(`input[name=soldout][value="${p.soldOut ? '1' : '0'}"]`);
   if (soInput) soInput.checked = true;
 
-  // load gallery
+  // load images into gallery
   galleryImgs = Array.isArray(p.imgs) ? [...p.imgs] : (p.img ? [p.img] : []);
   renderGallery();
 
@@ -1020,12 +1018,19 @@ async function saveProduct() {
   const imgs = [...galleryImgs];
   const img  = imgs[0] || '';
 
+  // Verificar tamanho total antes de salvar
+  const totalSize = JSON.stringify({name, cat, desc, price, sizes, badge, soldOut, imgs, img}).length;
+  if (totalSize > 900000) {
+    showToast('Fotos muito grandes. Tente com fotos menores.', true);
+    return;
+  }
+
   // Generate new id if needed
   const newId = editingId
     ? editingId
     : (products.length ? String(Math.max(...products.map(p => Number(p.id)||0)) + 1) : '1');
 
-  const existing = editingId ? products.find(x => x.id === editingId) : null;
+  const existing = editingId ? products.find(x => x.id == editingId) : null;
   const ordem    = existing ? existing.ordem : (products.length + 1);
 
   const product = {
