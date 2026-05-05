@@ -610,7 +610,7 @@
 
   <div class="field">
     <label>Preço *</label>
-    <input type="text" id="f-price" placeholder="Ex: R$ 199" />
+    <input type="text" id="f-price" placeholder="Ex: 299" oninput="formatPrice(this)" inputmode="numeric" />
   </div>
 
   <div class="field">
@@ -845,6 +845,20 @@ function setFilter(btn, f) {
   btn.classList.add('active');
   currentFilter = f;
   renderList();
+}
+
+/* ── PRICE FORMAT ── */
+function formatPrice(input) {
+  // Remove tudo que não for número
+  let digits = input.value.replace(/\D/g, '');
+  if (!digits) { input.value = ''; return; }
+  // Trata como centavos: 300 → 3,00 / 30000 → 300,00
+  const num = parseInt(digits, 10);
+  const formatted = (num / 100).toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  input.value = 'R$ ' + formatted;
 }
 
 /* ── SIZES GRID ── */
