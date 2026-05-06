@@ -728,6 +728,8 @@ let deleteId = null;
 
 /* ── INIT ── */
 window.onload = () => {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-screen').style.display = 'none';
   if (sessionStorage.getItem(SESSION_KEY) === '1') showAdmin();
 };
 
@@ -743,7 +745,10 @@ function doLogin() {
   }
 }
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
+  if (e.key === 'Enter') {
+    const ls = document.getElementById('login-screen');
+    if (ls && ls.style.display !== 'none') doLogin();
+  }
 });
 function doLogout() {
   sessionStorage.removeItem(SESSION_KEY);
