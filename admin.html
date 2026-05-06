@@ -685,8 +685,14 @@ const firebaseConfig = {
   appId:             "1:523440051527:web:b25da0dfc5ba3db928a862"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db  = firebase.firestore();
+let db;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+} catch(e) {
+  console.error('Firebase init error:', e);
+}
+
 const COL = 'produtos';
 
 /* ══════════════════════════════════
@@ -726,10 +732,39 @@ let editingId = null;
 let currentFilter = 'todos';
 let deleteId = null;
 
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, err = false) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'toast' + (err ? ' error' : '');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
 /* ── INIT ── */
 window.onload = () => {
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('admin-screen').style.display = 'none';
+
+  const confirmYes = document.getElementById('confirm-yes');
+  if (confirmYes) {
+    confirmYes.onclick = async () => {
+      if (deleteId) {
+        try {
+          await deleteProductFromFirestore(deleteId);
+          if (editingId == deleteId) resetForm();
+          showToast('🗑 Produto excluído.');
+        } catch(e) {
+          showToast('Erro ao excluir.', true);
+        }
+      }
+      closeConfirm();
+    };
+  }
+
   if (sessionStorage.getItem(SESSION_KEY) === '1') showAdmin();
 };
 
@@ -1076,29 +1111,6 @@ function confirmDelete(id) {
 function closeConfirm() {
   deleteId = null;
   document.getElementById('confirm-overlay').classList.remove('open');
-}
-document.getElementById('confirm-yes').onclick = async () => {
-  if (deleteId) {
-    try {
-      await deleteProductFromFirestore(deleteId);
-      if (editingId === deleteId) resetForm();
-      showToast('🗑 Produto excluído.');
-    } catch(e) {
-      showToast('Erro ao excluir.', true);
-    }
-  }
-  closeConfirm();
-};
-
-/* ── TOAST ── */
-let toastTimer;
-function showToast(msg, err = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (err ? ' error' : '');
-  t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 </script>
 
